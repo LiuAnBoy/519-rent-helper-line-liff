@@ -1,43 +1,21 @@
-import React, { createContext, useState } from 'react';
-import { getRequest, postRequest } from '../../service/http';
+import { createContext } from 'react';
+import { postRequest } from '../../service/http';
 
-export const UserContext = createContext({});
+export const UserContext = createContext<ProfileContextProps>(
+  {} as ProfileContextProps
+);
 
 const useUser = () => {
-  const [user, setUser] = useState<ProfileProps>({
-    _id: '',
-    name: '',
-    email: '',
-    picture: '',
-    line_id: '',
-    condition: 0,
-    notify_token: '',
-    exp: 0,
-    iat: 0,
-  });
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-
-  const requestGetUser = async () => {
-    try {
-      const res = await getRequest<ProfileResponseProps>('/auth/user/me');
-      res?.success && setUser(res.data);
-      return res;
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  const requestRegister = async (id_token: string) => {
+  const requestLiffLogin = async (code: string) => {
     const data = {
-      id_token,
+      code,
     };
 
     try {
       const res = await postRequest<ProfileResponseProps>(
-        '/auth/register',
+        '/auth/liff/login',
         data
       );
-      res?.success && setUser(res.data);
       return res;
     } catch (error) {
       console.log(error);
@@ -45,16 +23,16 @@ const useUser = () => {
   };
 
   return {
-    user,
-    setUser,
-    isLoading,
-    setIsLoading,
-    requestGetUser,
-    requestRegister,
+    requestLiffLogin,
   };
 };
 
 export default useUser;
+
+export interface ProfileContextProps {
+  user: ProfileProps;
+  setUser: React.Dispatch<React.SetStateAction<ProfileProps>>;
+}
 
 export interface ProfileResponseProps {
   success: boolean;
@@ -69,24 +47,7 @@ export interface ProfileProps {
   line_id: string;
   condition: number;
   notify_token: string;
+  notify_count: number;
   exp: number;
   iat: number;
-}
-
-export interface ConditionProps {
-  push: boolean; // 是否推播
-  current_id: string; // Current id
-  number: string; // condition number
-  user_id: string; // user id
-  floor: string; // 樓層
-  shape: string; // 型態
-  kind: string; // 類型
-  multiArea: string; // 坪數
-  multiNotice: string; // 須知
-  multiRoom: string; // 格局
-  option: string; // 設備
-  other: string; // 特色
-  region: string; // 地區
-  section: string; // 位置
-  price: string; // 租金
 }

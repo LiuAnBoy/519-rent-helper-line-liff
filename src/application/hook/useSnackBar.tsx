@@ -7,9 +7,10 @@ const useSnackBar = () => {
     enqueueSnackbar(res.message, {
       variant: res.success ? 'success' : 'error',
       anchorOrigin: {
-        vertical: 'bottom',
-        horizontal: 'left',
+        vertical: 'top',
+        horizontal: 'center',
       },
+      autoHideDuration: 2000,
     });
   };
 
@@ -21,5 +22,4 @@ export default useSnackBar;
 export interface SnackBarProps {
   success: boolean;
   message: string;
-  data?: any;
 }

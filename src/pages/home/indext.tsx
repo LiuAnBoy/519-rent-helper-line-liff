@@ -3,31 +3,58 @@ import {
   CircularProgress,
   IconButton,
   List,
-  ListItem,
-  ListItemText,
   Typography,
 } from '@mui/material';
-import React, { useContext } from 'react';
+import React, { useContext, useEffect } from 'react';
 import ControlPointIcon from '@mui/icons-material/ControlPoint';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
-import { UserContext } from '../../application/hook/useUser';
-import { ProfileProps } from '../../App';
+import {
+  ProfileContextProps,
+  UserContext,
+} from '../../application/hook/useUser';
+import useCondition, {
+  ConditionContextProps,
+  ConditionProps,
+  ConditionResponseProps,
+} from '../../application/hook/useCondition';
 import { ConditionContext } from '../../application/hook/useCondition';
 import ConditionListItem from '../../presentation/component/ConditionListItem';
-import { ConditionExtraProps } from '../condition';
 import useSnackBar from '../../application/hook/useSnackBar';
+import NotifySection from '../../presentation/component/NotifySection';
 
 const HomePage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { showSnackBar } = useSnackBar();
 
-  const user = useContext(UserContext) as ProfileProps;
-  const conditionList = useContext(ConditionContext) as ConditionExtraProps[];
+  const { user } = useContext(UserContext) as ProfileContextProps;
+  const { conditionList } = useContext(
+    ConditionContext
+  ) as ConditionContextProps;
+
+  const { requestChangePush } = useCondition();
 
   const handleAddCondition = () => {
-    navigate(`/condition/${user.condition + 1}`);
+    navigate('/condition/create');
   };
+
+  const handleChangePush = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+    id: string
+  ) => {
+    e.stopPropagation();
+    e.preventDefault();
+    const res = await requestChangePush(id);
+    return showSnackBar(res as ConditionResponseProps);
+  };
+
+  useEffect(() => {
+    if (location.state) {
+      showSnackBar(location.state as any);
+      location.state = null;
+    }
+  }, []);
 
   if (Object.keys(user).length === 0) {
     return (
@@ -45,34 +72,41 @@ const HomePage = () => {
     );
   }
   return (
-    <Box component='div'>
+    <Box component='div' sx={{ height: 'inherit' }}>
       <Typography
         variant='h6'
         sx={{ textAlign: 'center', position: 'relative' }}>
         Hi {user.name},
-        {conditionList.length > 0 ? ' 歡迎回來' : ' 請先設定條件'}
+        {user.notify_token && user.condition ? ' 歡迎回來' : ' 請先設定條件'}
       </Typography>
 
-      <Box
-        component='div'
-        sx={{
-          display: 'flex',
-          justifyContent: 'center',
-          flexDirection: 'column',
-        }}>
-        {conditionList.length > 0 && (
+      {!user.notify_token && <NotifySection id={user.line_id} />}
+
+      {user.notify_token && (
+        <Box
+          component='div'
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            height: 'inherit',
+          }}>
           <List sx={{ width: '100%' }}>
             {conditionList.map((condition, index) => (
-              <ConditionListItem key={index} condition={condition} showSnackBar={showSnackBar} />
+              <ConditionListItem
+                key={index}
+                condition={condition}
+                changePush={handleChangePush}
+              />
             ))}
           </List>
-        )}
-        {conditionList.length === 0 && (
-          <IconButton onClick={handleAddCondition}>
-            <ControlPointIcon sx={{ fontSize: '100px', color: '#ccc' }} />
-          </IconButton>
-        )}
-      </Box>
+
+          {conditionList.length <= 3 && (
+            <IconButton onClick={handleAddCondition}>
+              <ControlPointIcon sx={{ fontSize: '100px', color: '#ccc' }} />
+            </IconButton>
+          )}
+        </Box>
+      )}
     </Box>
   );
 };

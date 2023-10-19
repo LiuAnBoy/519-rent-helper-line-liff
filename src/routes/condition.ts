@@ -1,10 +1,15 @@
 import { RouteProps } from '.';
-import ConditionPage from '../pages/condition';
+import ConditionEditPage from '../pages/condition/edit';
+import ConditionCreatePage from '../pages/condition/create';
 
 const conditionRoutes: RouteProps[] = [
   {
-    path: '/condition/:number',
-    view: ConditionPage,
+    path: '/condition/edit/:id',
+    view: ConditionEditPage,
+  },
+  {
+    path: '/condition/create',
+    view: ConditionCreatePage,
   },
 ];
 

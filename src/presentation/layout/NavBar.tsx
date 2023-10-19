@@ -2,13 +2,17 @@ import React, { useContext } from 'react';
 import { AppBar, Avatar, IconButton, Toolbar, Typography } from '@mui/material';
 import ForwardIcon from '@mui/icons-material/Forward';
 
-import { ProfileProps } from '../../App';
-import { UserContext } from '../../application/hook/useUser';
+import {
+  ProfileContextProps,
+  UserContext,
+} from '../../application/hook/useUser';
+import { useNavigate } from 'react-router-dom';
 
 const NabBar = () => {
   const isConditionPage = window.location.pathname.includes('condition');
+  const navigate = useNavigate();
 
-  const user = useContext(UserContext) as ProfileProps;
+  const { user } = useContext(UserContext) as ProfileContextProps;
 
   return (
     <AppBar>
@@ -19,7 +23,7 @@ const NabBar = () => {
         {isConditionPage && (
           <IconButton
             sx={{ position: 'absolute', left: '8px' }}
-            onClick={() => (window.location.href = '/')}>
+            onClick={() => navigate('/')}>
             <ForwardIcon
               sx={{ transform: 'rotate(180deg)', color: '#fff', fontSize: 32 }}
             />

@@ -17,4 +17,11 @@ module.exports = function(app) {
       changeOrigin: false,
     })
   );
+  app.use(
+    '/line',
+    createProxyMiddleware({
+      target: API_HOST,
+      changeOrigin: false,
+    })
+  );
 };

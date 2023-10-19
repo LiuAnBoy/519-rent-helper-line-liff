@@ -6,7 +6,7 @@ const instance = axios.create({
   },
 });
 
-export const getRequest = async <T>(endPoint: string) => {
+const checkToken = () => {
   const storage = localStorage.getItem('591RentHelper');
 
   const token = storage ? JSON.parse(storage).token : null;
@@ -14,6 +14,10 @@ export const getRequest = async <T>(endPoint: string) => {
   if (token) {
     instance.defaults.headers.common['Authorization'] = `Bearer ${token}`;
   }
+}
+
+export const getRequest = async <T>(endPoint: string) => {
+  checkToken()
 
   try {
     const res = await instance.get<T>(endPoint);
@@ -23,14 +27,8 @@ export const getRequest = async <T>(endPoint: string) => {
   }
 };
 
-export const postRequest = async <T>(endPoint: string, body: any) => {
-  const storage = localStorage.getItem('591RentHelper');
-
-  const token = storage ? JSON.parse(storage).token : null;
-
-  if (token) {
-    instance.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-  }
+export const postRequest = async <T>(endPoint: string, body?: {}) => {
+  checkToken()
 
   try {
     const res = await instance.post<T>(endPoint, body);
@@ -40,14 +38,8 @@ export const postRequest = async <T>(endPoint: string, body: any) => {
   }
 };
 
-export const putRequest = async <T>(endPoint: string, body: any) => {
-  const storage = localStorage.getItem('591RentHelper');
-
-  const token = storage ? JSON.parse(storage).token : null;
-
-  if (token) {
-    instance.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-  }
+export const putRequest = async <T>(endPoint: string, body?: {}) => {
+  checkToken()
 
   try {
     const res = await instance.put<T>(endPoint, body);
@@ -57,17 +49,22 @@ export const putRequest = async <T>(endPoint: string, body: any) => {
   }
 };
 
-export const deleteRequest = async (endPoint: string) => {
-  const storage = localStorage.getItem('591RentHelper');
-
-  const token = storage ? JSON.parse(storage).token : null;
-
-  if (token) {
-    instance.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-  }
+export const patchRequest = async <T>(endPoint: string, body?: {}) => {
+  checkToken()
 
   try {
-    const res = await instance.delete(endPoint);
+    const res = await instance.patch<T>(endPoint, body);
+    return res.data;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+export const deleteRequest = async <T> (endPoint: string) => {
+  checkToken()
+
+  try {
+    const res = await instance.delete<T>(endPoint);
     return res.data;
   } catch (error) {
     console.log(error);

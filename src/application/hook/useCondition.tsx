@@ -1,30 +1,46 @@
-import { createContext, useState } from 'react';
-import { getRequest, postRequest } from '../../service/http';
-import { ConditionExtraProps } from '../../pages/condition';
+import { createContext, useContext, useState } from 'react';
+import {
+  deleteRequest,
+  getRequest,
+  patchRequest,
+  postRequest,
+  putRequest,
+} from '../../service/http';
+import { ProfileContextProps, UserContext } from './useUser';
 
-export const ConditionContext = createContext([] as ConditionExtraProps[]);
+export const ConditionContext = createContext<ConditionContextProps>(
+  {} as ConditionContextProps
+);
 
 const useCondition = () => {
-  const [condition, setCondition] = useState<Partial<ConditionExtraProps>>({
+  const [condition, setCondition] = useState<Partial<ConditionProps>>({
+    _id: '',
+    name: '',
     push: true,
+    user_id: '',
+    floor: '',
+    shape: [],
+    kind: '',
+    multiArea: [],
+    multiNotice: [],
+    multiRoom: [],
+    option: [],
+    other: [],
     region: '1',
     section: [],
-    kind: '',
-    price: [] || '',
-    min_price: '',
+    price: [],
     max_price: '',
-    multiRoom: [],
-    floor: '',
-    other: [],
-    shape: [],
-    multiArea: [] || '',
-    min_area: '',
+    min_price: '',
     max_area: '',
-    option: [],
-    multiNotice: [],
+    min_area: '',
   });
-  const [conditionList, setConditionList] = useState<ConditionExtraProps[]>([]);
+  // const [conditionList, setConditionList] = useState<ConditionProps[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  const { conditionList, setConditionList } = useContext(
+    ConditionContext
+  ) as ConditionContextProps;
+  const { user, setUser } = useContext(UserContext) as ProfileContextProps;
 
   const requestGetConditionList = async (uId: string) => {
     try {
@@ -32,35 +48,20 @@ const useCondition = () => {
       const res = await getRequest<ConditionResponseProps>(
         `/api/condition/all/${uId}`
       );
-      res?.success && setConditionList(res.data as ConditionExtraProps[]);
-      setIsLoading(false);
+      return res;
     } catch (error) {
       console.log(error);
       setIsLoading(false);
     }
   };
 
-  const requestGetCondition = async (uId: string, number: string) => {
+  const requestGetCondition = async (id: string) => {
     try {
       setIsLoading(true);
       const res = await getRequest<ConditionResponseProps>(
-        `/api/condition/${uId}/${number}`
+        `/api/condition/${id}`
       );
-      res?.success && setCondition(res.data as ConditionExtraProps);
-      setIsLoading(false);
-    } catch (error) {
-      console.log(error);
-      setIsLoading(false);
-    }
-  };
-
-  const requestSaveCondition = async (data: ConditionProps) => {
-    try {
-      setIsLoading(true);
-      const res = await postRequest<ConditionResponseProps>(
-        `/api/condition/save`,
-        data
-      );
+      res?.success && setCondition(res.data as ConditionProps);
       setIsLoading(false);
       return res;
     } catch (error) {
@@ -69,13 +70,81 @@ const useCondition = () => {
     }
   };
 
-  const requestChangePush = async (uId: string, number: string) => {
+  const requestCreateCondition = async (data: ConditionProps) => {
     try {
       setIsLoading(true);
       const res = await postRequest<ConditionResponseProps>(
-        `/api/condition/push/${uId}/${number}`,
-        {}
+        `/api/condition/create`,
+        data
       );
+      if (res && res.success) {
+        setConditionList([...conditionList, res.data as ConditionProps]);
+        setUser({ ...user, condition: user.condition + 1 });
+        setCondition({ ...(res.data as ConditionProps) });
+      }
+      setIsLoading(false);
+      return res;
+    } catch (error) {
+      console.log(error);
+      setIsLoading(false);
+    }
+  };
+
+  const requestUpdateCondition = async (data: ConditionProps) => {
+    try {
+      setIsLoading(true);
+      const res = await putRequest<ConditionResponseProps>(
+        `/api/condition/update/${data._id}`,
+        data
+      );
+
+      const new_conditionList = conditionList.map(c => {
+        if (c._id === data._id) {
+          c = data;
+        }
+        return c;
+      });
+      setConditionList(new_conditionList);
+      setCondition(data);
+      setIsLoading(false);
+      return res;
+    } catch (error) {
+      console.log(error);
+      setIsLoading(false);
+    }
+  };
+
+  const requestChangePush = async (id: string) => {
+    try {
+      setIsLoading(true);
+      const res = await patchRequest<ConditionResponseProps>(
+        `/api/condition/push/${id}`
+      );
+      const new_conditionList = conditionList.map(c => {
+        if (c._id === id) {
+          c.push = !c.push;
+        }
+        return c;
+      });
+      setConditionList(new_conditionList);
+      setIsLoading(false);
+      return res;
+    } catch (error) {
+      console.log(error);
+      setIsLoading(false);
+    }
+  };
+
+  const requestDeleteCondition = async (id: string) => {
+    try {
+      setIsLoading(true);
+      const res = await deleteRequest<ConditionResponseProps>(
+        `/api/condition/delete/${id}`
+      );
+      const newConditionList = conditionList.filter(c => c._id !== id);
+      setConditionList(newConditionList);
+      const new_user = { ...user, condition: user.condition - 1 };
+      setUser(new_user);
       setIsLoading(false);
       return res;
     } catch (error) {
@@ -86,43 +155,51 @@ const useCondition = () => {
 
   return {
     condition,
-    conditionList,
     setCondition,
-    isLoading,
-    setIsLoading,
+    setConditionList,
     requestGetCondition,
-    requestSaveCondition,
+    requestCreateCondition,
     requestChangePush,
     requestGetConditionList,
+    requestUpdateCondition,
+    requestDeleteCondition,
   };
 };
 
 export default useCondition;
 
+export interface ConditionContextProps {
+  conditionList: ConditionProps[];
+  setConditionList: React.Dispatch<React.SetStateAction<ConditionProps[]>>;
+}
+
 export interface ConditionResponseProps {
   success: boolean;
   message: string;
-  data?:
-    | ConditionProps
-    | ConditionProps[]
-    | ConditionExtraProps
-    | ConditionExtraProps[];
+  data?: ConditionProps | ConditionProps[];
 }
 
 export interface ConditionProps {
-  push: boolean; // 是否推播
-  current_id?: string; // Current id
-  number: string; // condition number
-  user_id: string; // user id
-  floor: string; // 樓層
-  shape: string; // 型態
-  kind: string; // 類型
-  multiArea: string; // 坪數
-  multiNotice: string; // 須知
-  multiRoom: string; // 格局
-  option: string; // 設備
-  other: string; // 特色
-  region: string; // 地區
-  section: string; // 位置
-  price: string; // 租金
+  _id: string;
+  name: string;
+  push: boolean;
+  house_id: string;
+  user_id: string;
+  floor: string;
+  shape: string[];
+  kind: string;
+  multiArea: string[];
+  multiNotice: string[];
+  multiRoom: string[];
+  option: string[];
+  other: string[];
+  region: string;
+  section: string[];
+  price: string[];
+  max_price: string;
+  min_price: string;
+  max_area: string;
+  min_area: string;
+  created_at: Date;
+  updated_at: Date;
 }

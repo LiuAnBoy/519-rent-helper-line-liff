@@ -1,5 +1,5 @@
-import React, { useContext, useEffect } from 'react';
-import { Box, Button, Grid, Switch } from '@mui/material';
+import React, { useContext, useEffect, useState } from 'react';
+import { Box, Button, CircularProgress, Grid, Switch } from '@mui/material';
 import { Formik, Form } from 'formik';
 
 import SectionDropdown from '../../presentation/component/SectionSection';
@@ -12,75 +12,130 @@ import ShapeDropdown from '../../presentation/component/ShapeSection';
 import MultiAreaSection from '../../presentation/component/MultiAreaSection';
 import OptionSection from '../../presentation/component/OptionSeciton';
 import MultiNoticeSection from '../../presentation/component/MultiNoticeSection';
-import { ConditionProps, ConditionResponseProps } from '../../application/hook/useCondition';
-import { useParams } from 'react-router-dom';
-import { UserContext } from '../../application/hook/useUser';
-import { ProfileProps } from '../../App';
+import {
+  ConditionContext,
+  ConditionContextProps,
+  ConditionResponseProps,
+} from '../../application/hook/useCondition';
+import { useNavigate, useParams } from 'react-router-dom';
+import {
+  ProfileContextProps,
+  UserContext,
+} from '../../application/hook/useUser';
 import FloorSection from '../../presentation/component/FloorSection';
 import useCondition from '../../application/hook/useCondition';
 import validationSchema from '../../application/validate/conditionSchema';
 import useSnackBar from '../../application/hook/useSnackBar';
+import ConfirmModal from '../../presentation/component/ConfirmModal';
+import NameSection from '../../presentation/component/NameSection';
 
-const ConditionPage = () => {
-  const { number } = useParams();
+const conditionDict: { [key: number]: string } = {
+  0: '一',
+  1: '二',
+  2: '三',
+  3: '四',
+  4: '五',
+};
+
+const ConditionEditPage = () => {
+  const navigator = useNavigate();
+  const { id } = useParams();
   const { showSnackBar } = useSnackBar();
-  const user = useContext(UserContext) as ProfileProps;
+  const { user } = useContext(UserContext) as ProfileContextProps;
+  const { conditionList } = useContext(
+    ConditionContext
+  ) as ConditionContextProps;
   const {
-    requestSaveCondition,
     requestGetCondition,
     condition,
     requestChangePush,
+    requestUpdateCondition,
+    requestDeleteCondition,
   } = useCondition();
 
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  const [open, setOpen] = useState(false);
+
   const handleSubmit = async (values: any) => {
-    const data: ConditionProps = {
-      push: values.push,
-      number: number as string,
-      user_id: user._id,
-      floor: values.floor,
-      region: values.region,
-      section: values.section.length > 0 ? values.section.join(',') : '',
-      kind: values.kind,
-      price:
-        values.price.length === 0 || values.min_price || values.max_price
-          ? `${values.min_price}_${values.max_price}`
-          : values.price.join(','),
-      multiRoom: values.multiRoom.length > 0 ? values.multiRoom.join(',') : '',
-      other: values.other.length > 0 ? values.other.join(',') : '',
-      shape: values.shape.length > 0 ? values.shape.join(',') : '',
-      multiArea:
-        values.multiArea.length === 0 || values.min_area || values.max_area
-          ? `${values.min_area}_${values.max_area}`
-          : values.multiArea.join(','),
-      option: values.option.length > 0 ? values.option.join(',') : '',
-      multiNotice:
-        values.multiNotice.length > 0 ? values.multiNotice.join(',') : '',
+    const index = conditionList.findIndex(
+      condition => condition._id === values._id
+    );
+    const data = {
+      ...values,
+      name: values.name || `第${conditionDict[index]}組條件`,
     };
 
     try {
-      const res = await requestSaveCondition(data);
+      const res = await requestUpdateCondition(data);
       return showSnackBar(res as ConditionResponseProps);
     } catch (error) {
       console.log(error);
     }
   };
 
-  const handleGetCondition = async () => {
+  const handleGetCondition = async (id: string) => {
     try {
-      return await requestGetCondition(user._id, number as string);
+      const res = await requestGetCondition(id);
+      if (res && !res?.success) {
+        navigator('/', {
+          state: { message: res?.message, success: res?.success },
+        });
+      }
+      return;
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleConfirmModalOpen = () => {
+    setOpen(true);
+  };
+
+  const handleConfirmModalClose = () => {
+    setOpen(false);
+  };
+
+  const handleDeleteCondition = async () => {
+    try {
+      const res = await requestDeleteCondition(condition._id as string);
+      if (res && res.success) {
+        handleConfirmModalClose();
+        navigator('/', {
+          state: { message: res?.message, success: res?.success },
+        });
+      }
     } catch (error) {
       console.log(error);
     }
   };
 
   useEffect(() => {
-    if (user.condition >= Number(number)) {
-      handleGetCondition();
+    if (id) {
+      setIsLoading(true);
+      handleGetCondition(id);
+      setIsLoading(false);
     }
-  }, []);
+  }, [id]);
+
+  if (isLoading) {
+    return (
+      <Box
+        component='div'
+        sx={{
+          width: '100%',
+          height: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
 
   return (
-    <Box component='div'>
+    <Box component='div' sx={{ pb: 6 }}>
       <Formik
         enableReinitialize
         initialValues={condition}
@@ -174,7 +229,7 @@ const ConditionPage = () => {
           ) => {
             try {
               setFieldValue('push', e.target.checked);
-              const res = await requestChangePush(user._id, number as string);
+              const res = await requestChangePush(condition._id as string);
               return showSnackBar(res as ConditionResponseProps);
             } catch (error) {
               console.log(error);
@@ -204,6 +259,12 @@ const ConditionPage = () => {
                     儲存
                   </Button>
                 </Grid>
+                {/* Name 條件名稱 */}
+                <NameSection
+                  value={values.name as string}
+                  onChange={handleChange}
+                  index={conditionList.length - 1}
+                />
                 {/* Region 地區 */}
                 <RegionDropdown
                   value={values.region as string}
@@ -284,24 +345,31 @@ const ConditionPage = () => {
           );
         }}
       </Formik>
+      <Button
+        fullWidth
+        variant='contained'
+        color='error'
+        sx={{ mt: 6 }}
+        onClick={handleConfirmModalOpen}>
+        刪除
+      </Button>
+      <ConfirmModal
+        title='警告'
+        content='確認刪除此條件？'
+        open={open}
+        handleClose={handleConfirmModalClose}
+        handleSubmit={handleDeleteCondition}
+      />
     </Box>
   );
 };
 
-export default ConditionPage;
-
-export interface ConditionExtraProps extends ConditionFormProps {
-  max_price: string;
-  min_price: string;
-  max_area: string;
-  min_area: string;
-}
+export default ConditionEditPage;
 
 interface ConditionFormProps {
+  name: string; // condition name
   push: boolean; // 是否推播
   current_id: string; // Current id
-  number: string; // condition number
-  user_id: string; // user id
   floor: string; // 樓層
   shape: string[]; // 型態
   kind: string; // 類型

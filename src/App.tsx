@@ -12,43 +12,49 @@ import { useSearchParams } from 'react-router-dom';
 import useUser, { UserContext } from './application/hook/useUser';
 import useCondition, {
   ConditionContext,
+  ConditionProps,
 } from './application/hook/useCondition';
-import axios from 'axios';
 import { SnackbarProvider } from 'notistack';
+import { ProfileProps } from './application/hook/useUser';
 
 export default function App() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { user, requestGetUser, isLoading, setIsLoading, requestRegister } =
-    useUser();
-  const { conditionList, requestGetConditionList } = useCondition();
+  const { requestLiffLogin } = useUser();
+  const { requestGetConditionList } = useCondition();
+
+  const [user, setUser] = React.useState<ProfileProps>({} as ProfileProps);
+  const [conditionList, setConditionList] = React.useState<ConditionProps[]>(
+    []
+  );
+  const [isLoading, setIsLoading] = React.useState<boolean>(false);
 
   const appInit = async () => {
     try {
       await liff.init({ liffId: process.env.REACT_APP_LINE_LIFF_ID as string });
       if (!liff.isLoggedIn()) {
-        try {
-          await liff.login();
-          const id_Token = await liff.getIDToken();
-          await requestRegister(id_Token as string);
-        } catch (error) {}
-      } else {
-        setIsLoading(true);
-        const id_token = await liff.getIDToken();
-
-        const storage = {
-          token: id_token,
-        };
-        localStorage.setItem('591RentHelper', JSON.stringify(storage));
-
-        const res = await requestGetUser();
-        if (!res?.success) {
-          await requestRegister(id_token as string);
-        }
-        await requestGetConditionList(res?.data._id as string);
-
-        setIsLoading(false);
+        await liff.login();
+        navigate('/');
       }
+      setIsLoading(true);
+      const id_token = await liff.getIDToken();
+
+      const storage = {
+        token: id_token,
+      };
+
+      localStorage.setItem('591RentHelper', JSON.stringify(storage));
+
+      const res = await requestLiffLogin(id_token as string);
+      if (res?.success) {
+        setUser(res.data);
+        const conditionResponse = await requestGetConditionList(res.data._id);
+        if (conditionResponse?.success) {
+          setConditionList(conditionResponse.data as ConditionProps[]);
+        }
+      }
+
+      setIsLoading(false);
     } catch (error) {
       console.log(error);
     }
@@ -57,6 +63,10 @@ export default function App() {
   React.useEffect(() => {
     appInit();
   }, []);
+
+  if (searchParams.get('code')) {
+    navigate('/');
+  }
 
   // React.useEffect(() => {
   //   if (process.env.NODE_ENV === 'development') {
@@ -81,8 +91,8 @@ export default function App() {
   }
 
   return (
-    <UserContext.Provider value={user}>
-      <ConditionContext.Provider value={conditionList}>
+    <UserContext.Provider value={{ user, setUser }}>
+      <ConditionContext.Provider value={{ conditionList, setConditionList }}>
         <SnackbarProvider maxSnack={3}>
           <Container maxWidth='sm'>
             <NabBar />
@@ -104,37 +114,19 @@ export default function App() {
   );
 }
 
-export interface ProfileResponseProps {
-  success: boolean;
-  data: ProfileProps;
-}
+// export interface ProfileResponseProps {
+//   success: boolean;
+//   data: ProfileProps;
+// }
 
-export interface ProfileProps {
-  _id: string;
-  name: string;
-  email: string;
-  picture: string;
-  line_id: string;
-  condition: number;
-  notify_token: string;
-  exp: number;
-  iat: number;
-}
-
-export interface ConditionProps {
-  push: boolean; // 是否推播
-  current_id: string; // Current id
-  number: string; // condition number
-  user_id: string; // user id
-  floor: string; // 樓層
-  shape: string; // 型態
-  kind: string; // 類型
-  multiArea: string; // 坪數
-  multiNotice: string; // 須知
-  multiRoom: string; // 格局
-  option: string; // 設備
-  other: string; // 特色
-  region: string; // 地區
-  section: string; // 位置
-  price: string; // 租金
-}
+// export interface ProfileProps {
+//   _id: string;
+//   name: string;
+//   email: string;
+//   picture: string;
+//   line_id: string;
+//   condition: number;
+//   notify_token: string;
+//   exp: number;
+//   iat: number;
+// }
