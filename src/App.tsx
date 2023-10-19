@@ -7,7 +7,6 @@ import NabBar from './presentation/layout/NavBar';
 import { Route, Routes, useNavigate } from 'react-router-dom';
 import routes, { RouteProps } from './routes';
 import Content from './presentation/layout/Content';
-import vConsole from './application/vConsole';
 import { useSearchParams } from 'react-router-dom';
 import useUser, { UserContext } from './application/hook/useUser';
 import useCondition, {
@@ -67,12 +66,6 @@ export default function App() {
   if (searchParams.get('code')) {
     navigate('/');
   }
-
-  // React.useEffect(() => {
-  //   if (process.env.NODE_ENV === 'development') {
-  //     vConsole.show();
-  //   }
-  // }, []);
 
   if (isLoading) {
     return (
