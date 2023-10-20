@@ -175,6 +175,7 @@ const ConditionCreatePage = () => {
           ) => {
             try {
               setFieldValue('push', e.target.checked);
+              if (!condition._id) return ;
               const res = await requestChangePush(condition._id as string);
               return showSnackBar(res as ConditionResponseProps);
             } catch (error) {
