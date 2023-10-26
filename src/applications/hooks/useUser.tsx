@@ -1,10 +1,4 @@
-import { createContext } from 'react';
-
-import Http, { postRequest } from '@/service/http';
-
-export const UserContext = createContext<ProfileContextProps>(
-  {} as ProfileContextProps,
-);
+import Http from '@/services/http';
 
 const useUser = () => {
   const requestLiffLogin = async (code: string) => {
@@ -13,7 +7,7 @@ const useUser = () => {
     };
 
     try {
-      const res = await postRequest<ProfileResponseProps>(
+      const res = await Http.post<ProfileResponseProps>(
         '/auth/liff/login',
         data,
       );
@@ -29,11 +23,6 @@ const useUser = () => {
 };
 
 export default useUser;
-
-export interface ProfileContextProps {
-  user: ProfileProps;
-  setUser: React.Dispatch<React.SetStateAction<ProfileProps>>;
-}
 
 export interface ProfileResponseProps {
   success: boolean;
