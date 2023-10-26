@@ -34,13 +34,11 @@ export default function HomePage() {
   const router = useRouter();
 
   const { user } = useContext(UserContext) as ProfileContextProps;
-  const { requestChangePush } = useCondition();
+  const { requestChangePush, isLoading } = useCondition();
   const { showSnackBar } = useAlert();
   const { conditionList } = useContext(
     ConditionContext,
   ) as ConditionContextProps;
-
-  const [isLoading, setIsLoading] = useState(false);
 
   const handleChangePush = async (
     e: React.ChangeEvent<HTMLInputElement>,
@@ -48,9 +46,7 @@ export default function HomePage() {
   ) => {
     e.stopPropagation();
     e.preventDefault();
-    setIsLoading(true);
     const res = await requestChangePush(id);
-    setIsLoading(false);
     return showSnackBar(res as ConditionResponseProps);
   };
 
@@ -58,8 +54,7 @@ export default function HomePage() {
     router.push('/condition/create');
   };
 
-  if (Object.keys(user).length === 0 || conditionList.length === 0)
-    return <Loading />;
+  if (isLoading) return <Loading />;
 
   return (
     <Box>
