@@ -1,14 +1,14 @@
 [[redirects]]
-from = "/api/"
+from = "/api/*"
 to = "https://api.furryzon.com/api/:splat"
 status = 200
 
 [[redirects]]
-from = "/auth/"
+from = "/auth/*"
 to = "https://api.furryzon.com/auth/:splat"
 status = 200
 
 [[redirects]]
-from = "/line/"
+from = "/line/*"
 to = "https://api.furryzon.com/line/:splat"
 status = 200
