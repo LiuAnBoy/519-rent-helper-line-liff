@@ -151,6 +151,7 @@ const useCondition = () => {
 
   return {
     condition,
+    isLoading,
     setCondition,
     setConditionList,
     requestGetCondition,

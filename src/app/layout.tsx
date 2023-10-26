@@ -10,6 +10,7 @@ import React, { Suspense, useEffect } from 'react';
 import ConditionProvider from '@/applications/contexts/conditionContext';
 import UserProvider from '@/applications/contexts/userContext';
 import Header from '@/components/Layout/Header';
+import theme from '@/components/ThemeRegistry/theme';
 import ThemeRegistry from '@/components/ThemeRegistry/ThemeRegistry';
 
 import Loading from './loading';
@@ -49,6 +50,19 @@ export default function RootLayout({
 
   return (
     <html lang="en">
+      <head>
+        <title>591租屋小幫手</title>
+        <meta name="viewport" content="initial-scale=1, width=device-width" />
+        <meta name="theme-color" content={theme.palette.primary.main} />
+        <meta name="description" content="591租屋小幫手" />
+        <meta name="image" property="og:image" content="../public/icon.png" />
+        <meta name="title" property="og:title" content="591租屋小幫手" />
+        <meta
+          name="description"
+          property="og:description"
+          content="訂閱取得租屋最新資訊"
+        />
+      </head>
       <body>
         <UserProvider>
           <ConditionProvider>

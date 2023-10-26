@@ -8,29 +8,11 @@ import {
   Typography,
 } from '@mui/material';
 import { FormikHandlers } from 'formik';
-import React, { FC, useEffect } from 'react';
+import React, { FC } from 'react';
 
 import Section from '@/Utils/Section';
 
 const SectionSection: FC<SectionProps> = ({ onChange, value, region }) => {
-  useEffect(() => {
-    onChange({
-      target: {
-        name: 'section',
-        value: value.length > 5 ? value.slice(0, 5) : value,
-      },
-    } as any);
-  }, [value]);
-
-  useEffect(() => {
-    onChange({
-      target: {
-        name: 'section',
-        value: [],
-      },
-    } as any);
-  }, [region]);
-
   return (
     <Grid container item>
       <Grid item xs={2}>

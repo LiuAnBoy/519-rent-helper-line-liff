@@ -6,6 +6,7 @@ import {
   CircularProgress,
   Divider,
   Grid,
+  SelectChangeEvent,
   Stack,
   Switch,
   Typography,
@@ -64,9 +65,8 @@ const ConditionEditPage = () => {
     requestChangePush,
     requestUpdateCondition,
     requestDeleteCondition,
+    isLoading,
   } = useCondition();
-
-  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const [open, setOpen] = useState(false);
 
@@ -121,13 +121,11 @@ const ConditionEditPage = () => {
 
   useEffect(() => {
     if (cId) {
-      setIsLoading(true);
       handleGetCondition(cId);
-      setIsLoading(false);
     }
   }, [cId]);
 
-  if (!condition._id) {
+  if (isLoading) {
     return (
       <Box
         component="div"
@@ -153,6 +151,13 @@ const ConditionEditPage = () => {
         validationSchema={validationSchema}
       >
         {({ handleChange, errors, values, setFieldValue }) => {
+          const handleRegionChange = (e: SelectChangeEvent<string>) => {
+            if (e.target.value !== condition.region) {
+              setFieldValue('section', []);
+            }
+            handleChange(e);
+          };
+
           const handleFieldChange = (
             e: React.ChangeEvent<HTMLInputElement>,
             module: string,
@@ -275,7 +280,7 @@ const ConditionEditPage = () => {
                 {/* Region 地區 */}
                 <RegionSection
                   value={values.region as string}
-                  onChange={handleChange}
+                  onChange={handleRegionChange}
                   error={Boolean(errors.region)}
                   helpText={errors.region || ''}
                 />
