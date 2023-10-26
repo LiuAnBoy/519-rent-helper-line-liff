@@ -1,9 +1,12 @@
 /** @type {import('next').NextConfig} */
-const API_HOST = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API_HOST = process.env.NEXT_PUBLIC_API_URL;
 
 const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
+  experimental: {
+    appDir: true,
+  },
   modularizeImports: {
     '@mui/icons-material': {
       transform: '@mui/icons-material/{{member}}',
