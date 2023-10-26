@@ -23,6 +23,8 @@ export default function RootLayout({
   const router = useRouter();
   const searchParams = useSearchParams();
 
+  console.log('env', process.env.NEXT_PUBLIC_API_URL);
+
   const appInit = async () => {
     try {
       await liff.init({
