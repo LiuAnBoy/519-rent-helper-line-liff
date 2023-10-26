@@ -11,11 +11,13 @@ export const ConditionContext = createContext<ConditionContextProps>(
 
 const ConditionProvider = ({ children }: { children: React.ReactNode }) => {
   const { requestGetConditionList } = useCondition();
-
-  const [conditionList, setConditionList] = useState<ConditionProps[]>([]);
   const { user } = useContext(UserContext) as ProfileContextProps;
 
+  const [conditionList, setConditionList] = useState<ConditionProps[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
   const fetchConditionList = async () => {
+    setIsLoading(true);
     const storage = localStorage.getItem('591RentHelper');
     const token = storage && JSON.parse(storage).token;
     if (!token) return;
@@ -24,6 +26,7 @@ const ConditionProvider = ({ children }: { children: React.ReactNode }) => {
       if (res?.success) {
         setConditionList(res?.data as ConditionProps[]);
       }
+      setIsLoading(false);
     } catch (error) {
       console.log(error);
     }
@@ -36,7 +39,9 @@ const ConditionProvider = ({ children }: { children: React.ReactNode }) => {
   }, [user._id]);
 
   return (
-    <ConditionContext.Provider value={{ conditionList, setConditionList }}>
+    <ConditionContext.Provider
+      value={{ conditionList, setConditionList, isLoading }}
+    >
       {children}
     </ConditionContext.Provider>
   );
@@ -47,4 +52,5 @@ export default ConditionProvider;
 export interface ConditionContextProps {
   conditionList: ConditionProps[];
   setConditionList: React.Dispatch<React.SetStateAction<ConditionProps[]>>;
+  isLoading?: boolean;
 }

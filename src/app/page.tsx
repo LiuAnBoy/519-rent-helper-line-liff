@@ -34,9 +34,9 @@ export default function HomePage() {
   const router = useRouter();
 
   const { user } = useContext(UserContext) as ProfileContextProps;
-  const { requestChangePush, isLoading } = useCondition();
+  const { requestChangePush } = useCondition();
   const { showSnackBar } = useAlert();
-  const { conditionList } = useContext(
+  const { conditionList, isLoading } = useContext(
     ConditionContext,
   ) as ConditionContextProps;
 
@@ -54,7 +54,7 @@ export default function HomePage() {
     router.push('/condition/create');
   };
 
-  if (isLoading) return <Loading />;
+  if (Object.keys(user).length === 0 || isLoading) return <Loading />;
 
   return (
     <Box>
@@ -97,7 +97,7 @@ export default function HomePage() {
         </Box>
       )}
 
-      <Snackbar
+      {/* <Snackbar
         open={isLoading}
         anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
         sx={{ display: 'flex', alignItems: 'center', top: 24 }}
@@ -109,7 +109,7 @@ export default function HomePage() {
         >
           儲存中
         </Alert>
-      </Snackbar>
+      </Snackbar> */}
     </Box>
   );
 }

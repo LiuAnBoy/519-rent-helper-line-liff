@@ -15,14 +15,11 @@ import { Form, Formik } from 'formik';
 import { useParams, useRouter } from 'next/navigation';
 import { useContext, useEffect, useState } from 'react';
 
+import Loading from '@/app/loading';
 import {
   ConditionContext,
   ConditionContextProps,
 } from '@/applications/contexts/conditionContext';
-import {
-  ProfileContextProps,
-  UserContext,
-} from '@/applications/contexts/userContext';
 import useAlert from '@/applications/hooks/useAlert';
 import useCondition, {
   ConditionResponseProps,
@@ -55,7 +52,6 @@ const ConditionEditPage = () => {
 
   const router = useRouter();
   const { showSnackBar } = useAlert();
-  const { user } = useContext(UserContext) as ProfileContextProps;
   const { conditionList } = useContext(
     ConditionContext,
   ) as ConditionContextProps;
@@ -126,20 +122,7 @@ const ConditionEditPage = () => {
   }, [cId]);
 
   if (isLoading) {
-    return (
-      <Box
-        component="div"
-        sx={{
-          width: '100%',
-          height: '100%',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
-        <CircularProgress />
-      </Box>
-    );
+    return <Loading />;
   }
 
   return (

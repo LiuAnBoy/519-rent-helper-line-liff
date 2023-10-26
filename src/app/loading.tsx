@@ -5,8 +5,6 @@ const Loading = () => {
     <Box
       component="div"
       sx={{
-        // width: '100vw',
-        height: 'inherit',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',

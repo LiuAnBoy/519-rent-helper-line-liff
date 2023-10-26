@@ -14,18 +14,7 @@ const useAlert = () => {
     });
   };
 
-  const loadingSnackBar = () => {
-    enqueueSnackbar('儲存中', {
-      variant: 'info',
-      anchorOrigin: {
-        vertical: 'top',
-        horizontal: 'center',
-      },
-      autoHideDuration: 2000,
-    });
-  };
-
-  return { showSnackBar, loadingSnackBar };
+  return { showSnackBar };
 };
 
 export default useAlert;

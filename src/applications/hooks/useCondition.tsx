@@ -44,6 +44,7 @@ const useCondition = () => {
       const res = await Http.get<ConditionResponseProps>(
         `/api/condition/all/${uId}`,
       );
+      setIsLoading(false);
       return res;
     } catch (error) {
       console.log(error);
